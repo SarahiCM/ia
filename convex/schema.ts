@@ -26,16 +26,21 @@ export default defineSchema({
     .index("by_alumno", ["nombreAlumno"])
     .index("by_enviado", ["enviado"]),
 
+
+//  TABLA DE LA ETAPA 3
+// TABLA DE PRUEBA PARA EL CHAT CON GEMINI, NO ES PARTE DEL SISTEMA DE FALTAS
     Clientes: defineTable({
     nombreCliente: v.string(),
     email: v.string(),
     telefono: v.string(),
+    direccion: v.string(),
     fechaRegistro: v.string(),
   })
-
+ 
     .index("by_email", ["email"])
     .index("by_nombre", ["nombreCliente"]),
-    
+
+   // TABLA DE VENTAS  
     Ventas: defineTable({
     nombreCliente: v.string(),
     producto: v.string(),
@@ -45,4 +50,25 @@ export default defineSchema({
   })
     .index("by_cliente", ["nombreCliente"])
     .index("by_producto", ["producto"]),
-});
+   
+    // TABLA DE PRODUCTOS
+    Productos: defineTable({
+    nombreProducto: v.string(),
+    descripcion: v.string(),
+    precio: v.number(),
+    stock: v.number(),
+  })
+    .index("by_nombre", ["nombreProducto"]),
+    
+    // TABLA DE QUEJAS 
+    Quejas: defineTable({
+    nombreCliente: v.string(),
+    email: v.string(),
+    telefono: v.string(),
+    descripcion: v.string(),
+    fechaQueja: v.string(),
+    })
+    .index("by_email", ["email"])
+    .index("by_cliente", ["nombreCliente"]),
+    
+});   

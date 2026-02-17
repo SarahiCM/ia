@@ -1,5 +1,5 @@
-import SistemaFaltas from "@/app/components/SistemaFaltas";
+import PaginaPrincipal from "@/app/components/PaginaPrincipal";
 
 export default function Home() {
-  return <SistemaFaltas />;
+  return <PaginaPrincipal />;
 }
