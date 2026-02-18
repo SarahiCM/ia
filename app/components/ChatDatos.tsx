@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { api } from "../../convex/_generated/api";
 
 type Vista = "clientes" | "ventas" | "quejas" | "resumen" | "chat";
@@ -24,9 +25,7 @@ export default function ChatDatos() {
 
       <main className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="mb-8 rounded-3xl border-2 border-purple-200 bg-gradient-to-r from-white to-purple-50/50 p-8 shadow-[0_12px_30px_rgba(196,181,253,0.2)] backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-purple-600">
-            Sistema de datos
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-purple-600">Sistema de datos</p>
           <h1 className="mt-2 text-3xl font-bold bg-gradient-to-r from-purple-900 to-purple-600 bg-clip-text text-transparent sm:text-4xl">
             Chat de Análisis de Datos
           </h1>
@@ -37,64 +36,27 @@ export default function ChatDatos() {
 
         <section className="mb-8">
           <div className="inline-flex flex-wrap rounded-2xl border-2 border-purple-200 bg-white/70 p-1.5 shadow-[0_4px_12px_rgba(196,181,253,0.15)] backdrop-blur">
-            <button
-              onClick={() => setVistaActual("resumen")}
-              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                vistaActual === "resumen"
-                  ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
-                  : "text-purple-700 hover:bg-purple-100/50"
-              }`}
-            >
-              Resumen
-            </button>
-            <button
-              onClick={() => setVistaActual("clientes")}
-              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                vistaActual === "clientes"
-                  ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
-                  : "text-purple-700 hover:bg-purple-100/50"
-              }`}
-            >
-              Clientes
-            </button>
-            <button
-              onClick={() => setVistaActual("ventas")}
-              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                vistaActual === "ventas"
-                  ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
-                  : "text-purple-700 hover:bg-purple-100/50"
-              }`}
-            >
-              Ventas
-            </button>
-            <button
-              onClick={() => setVistaActual("quejas")}
-              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                vistaActual === "quejas"
-                  ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
-                  : "text-purple-700 hover:bg-purple-100/50"
-              }`}
-            >
-              Quejas
-            </button>
-            <button
-              onClick={() => setVistaActual("chat")}
-              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                vistaActual === "chat"
-                  ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
-                  : "text-purple-700 hover:bg-purple-100/50"
-              }`}
-            >
-              Chat IA
-            </button>
+            {(["resumen", "clientes", "ventas", "quejas", "chat"] as Vista[]).map((vista) => (
+              <button
+                key={vista}
+                onClick={() => setVistaActual(vista)}
+                className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
+                  vistaActual === vista
+                    ? "bg-gradient-to-r from-purple-400 to-purple-300 text-white shadow-lg shadow-purple-300/50"
+                    : "text-purple-700 hover:bg-purple-100/50"
+                }`}
+              >
+                {vista === "chat" ? "Chat IA" : vista.charAt(0).toUpperCase() + vista.slice(1)}
+              </button>
+            ))}
           </div>
         </section>
 
-        {vistaActual === "resumen" && <ResumenDatos />}
+        {vistaActual === "resumen"  && <ResumenDatos />}
         {vistaActual === "clientes" && <ListaClientes />}
-        {vistaActual === "ventas" && <ListaVentas />}
-        {vistaActual === "quejas" && <ListaQuejas />}
-        {vistaActual === "chat" && <ChatDatosIA />}
+        {vistaActual === "ventas"   && <ListaVentas />}
+        {vistaActual === "quejas"   && <ListaQuejas />}
+        {vistaActual === "chat"     && <ChatDatosIA />}
       </main>
     </div>
   );
@@ -102,158 +64,49 @@ export default function ChatDatos() {
 
 function ResumenDatos() {
   const resumen = useQuery(api.datos.obtenerResumenDatos);
-
   return (
     <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Clientes registrados
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            {resumen?.totalClientes ?? 0}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          Clientes activos en el sistema
-        </p>
-      </article>
-
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Total de ventas
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            {resumen?.totalVentas ?? 0}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          Transacciones registradas
-        </p>
-      </article>
-
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Monto total
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            ${resumen ? resumen.montoTotalVentas.toFixed(2) : "0.00"}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          En ventas
-        </p>
-      </article>
-
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Quejas registradas
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            {resumen?.totalQuejas ?? 0}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          Que requieren atención
-        </p>
-      </article>
-
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Productos disponibles
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            {resumen?.productosDisponibles ?? 0}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          Con stock en almacén
-        </p>
-      </article>
-
-      <article className={cardClassName}>
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-            Venta promedio
-          </p>
-          <p className="mt-2 text-3xl font-bold text-purple-900">
-            ${resumen ? resumen.ventasPromedio.toFixed(2) : "0.00"}
-          </p>
-        </div>
-        <p className="text-sm text-purple-700">
-          Por transacción
-        </p>
-      </article>
+      {[
+        { label: "Clientes registrados",  value: resumen?.totalClientes ?? 0,                                  sub: "Clientes activos en el sistema" },
+        { label: "Total de ventas",        value: resumen?.totalVentas ?? 0,                                    sub: "Transacciones registradas" },
+        { label: "Monto total",            value: `$${resumen ? resumen.montoTotalVentas.toFixed(2) : "0.00"}`, sub: "En ventas" },
+        { label: "Quejas registradas",     value: resumen?.totalQuejas ?? 0,                                    sub: "Que requieren atención" },
+        { label: "Productos disponibles",  value: resumen?.productosDisponibles ?? 0,                           sub: "Con stock en almacén" },
+        { label: "Venta promedio",         value: `$${resumen ? resumen.ventasPromedio.toFixed(2) : "0.00"}`,   sub: "Por transacción" },
+      ].map(({ label, value, sub }) => (
+        <article key={label} className={cardClassName}>
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">{label}</p>
+            <p className="mt-2 text-3xl font-bold text-purple-900">{value}</p>
+          </div>
+          <p className="text-sm text-purple-700">{sub}</p>
+        </article>
+      ))}
     </section>
   );
 }
 
 function ListaClientes() {
-  const [nombreBusqueda, setNombreBusqueda] = useState("");
   const clientes = useQuery(api.datos.obtenerTodosLosClientes);
-
-  const clientesFiltrados = clientes?.filter((c) =>
-    c.nombreCliente.toLowerCase().includes(nombreBusqueda.toLowerCase())
-  );
-
   return (
     <section className="mx-auto w-full max-w-4xl">
       <article className={cardClassName}>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-purple-900">Clientes</h2>
           <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
-            {clientesFiltrados?.length ?? 0} registros
+            {clientes?.length ?? 0} registros
           </span>
         </div>
-
-        <div className="mb-5">
-          <input
-            type="text"
-            placeholder="Buscar por nombre..."
-            value={nombreBusqueda}
-            onChange={(e) => setNombreBusqueda(e.target.value)}
-            className={fieldClassName}
-          />
-        </div>
-
         <div className="max-h-[600px] space-y-3 overflow-y-auto pr-1">
-          {clientesFiltrados && clientesFiltrados.length > 0 ? (
-            clientesFiltrados.map((cliente) => (
-              <div
-                key={cliente._id}
-                className="rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 hover:border-purple-300 hover:shadow-md"
-              >
-                <p className="font-semibold text-purple-900">
-                  {cliente.nombreCliente}
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-3 text-sm text-purple-900">
-                  <p>
-                    <span className="font-semibold">Email:</span> {cliente.email}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Teléfono:</span>{" "}
-                    {cliente.telefono}
-                  </p>
-                  <p className="col-span-2">
-                    <span className="font-semibold">Dirección:</span>{" "}
-                    {cliente.direccion}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Registrado:</span>{" "}
-                    {new Date(cliente.fechaRegistro).toLocaleDateString(
-                      "es-MX"
-                    )}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
+          {clientes && clientes.length > 0 ? clientes.map((c) => (
+            <div key={c._id} className="rounded-xl border-2 border-purple-200 bg-white p-4 hover:border-purple-300 hover:shadow-md">
+              <p className="font-semibold text-purple-900">{c.nombreCliente}</p>
+              <p className="text-sm text-purple-700">{c.email}</p>
+              <p className="text-sm text-purple-700">{c.telefono}</p>
+            </div>
+          )) : (
             <div className="rounded-xl border-2 border-dashed border-purple-300 bg-purple-50/50 p-8 text-center text-sm text-purple-600">
-              No hay clientes encontrados.
+              No hay clientes registrados.
             </div>
           )}
         </div>
@@ -263,81 +116,44 @@ function ListaClientes() {
 }
 
 function ListaVentas() {
-  const [clienteBusqueda, setClienteBusqueda] = useState("");
   const ventas = useQuery(api.datos.obtenerTodasLasVentas);
-
-  const ventasFiltradas = ventas?.filter((v) =>
-    v.nombreCliente.toLowerCase().includes(clienteBusqueda.toLowerCase())
-  );
-
   return (
     <section className="mx-auto w-full max-w-4xl">
       <article className={cardClassName}>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-purple-900">Ventas</h2>
           <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
-            {ventasFiltradas?.length ?? 0} registros
+            {ventas?.length ?? 0} registros
           </span>
         </div>
-
-        <div className="mb-5">
-          <input
-            type="text"
-            placeholder="Buscar por cliente..."
-            value={clienteBusqueda}
-            onChange={(e) => setClienteBusqueda(e.target.value)}
-            className={fieldClassName}
-          />
-        </div>
-
         <div className="max-h-[600px] space-y-3 overflow-y-auto pr-1">
-          {ventasFiltradas && ventasFiltradas.length > 0 ? (
-            ventasFiltradas.map((venta) => (
-              <div
-                key={venta._id}
-                className="rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50 p-4 hover:border-purple-300 hover:shadow-md"
-              >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-purple-900">
-                      {venta.nombreCliente}
-                    </p>
-                    <p className="text-sm text-purple-700">
-                      Producto: {venta.producto}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-purple-200 px-3 py-1 text-xs font-bold text-purple-900">
-                    ${venta.monto.toFixed(2)}
-                  </span>
+          {ventas && ventas.length > 0 ? ventas.map((v) => (
+            <div key={v._id} className="rounded-xl border-2 border-purple-200 bg-white p-4 hover:border-purple-300 hover:shadow-md">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-purple-900">{v.nombreCliente}</p>
+                  <p className="text-sm text-purple-700">{v.producto}</p>
                 </div>
-
-                <div className="grid grid-cols-3 gap-3 text-sm text-purple-900">
-                  <p className="rounded-lg bg-purple-100/60 p-2">
-                    <span className="block text-xs font-bold uppercase tracking-wide text-purple-700 mb-1">
-                      Cantidad
-                    </span>
-                    <span className="font-semibold">{venta.cantidad}</span>
-                  </p>
-                  <p className="rounded-lg bg-purple-100/60 p-2">
-                    <span className="block text-xs font-bold uppercase tracking-wide text-purple-700 mb-1">
-                      Unitario
-                    </span>
-                    <span className="font-semibold">
-                      ${(venta.monto / venta.cantidad).toFixed(2)}
-                    </span>
-                  </p>
-                  <p className="rounded-lg bg-purple-100/60 p-2">
-                    <span className="block text-xs font-bold uppercase tracking-wide text-purple-700 mb-1">
-                      Fecha
-                    </span>
-                    <span className="font-semibold text-xs">
-                      {new Date(venta.fechaVenta).toLocaleDateString("es-MX")}
-                    </span>
-                  </p>
-                </div>
+                <span className="rounded-full bg-purple-200 px-3 py-1 text-xs font-bold text-purple-900">
+                  ${v.monto.toFixed(2)}
+                </span>
               </div>
-            ))
-          ) : (
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <p className="rounded-lg bg-purple-100/60 p-2">
+                  <span className="block text-xs font-bold uppercase text-purple-700 mb-1">Cantidad</span>
+                  <span className="font-semibold">{v.cantidad}</span>
+                </p>
+                <p className="rounded-lg bg-purple-100/60 p-2">
+                  <span className="block text-xs font-bold uppercase text-purple-700 mb-1">Unitario</span>
+                  <span className="font-semibold">${(v.monto / v.cantidad).toFixed(2)}</span>
+                </p>
+                <p className="rounded-lg bg-purple-100/60 p-2">
+                  <span className="block text-xs font-bold uppercase text-purple-700 mb-1">Fecha</span>
+                  <span className="font-semibold text-xs">{new Date(v.fechaVenta).toLocaleDateString("es-MX")}</span>
+                </p>
+              </div>
+            </div>
+          )) : (
             <div className="rounded-xl border-2 border-dashed border-purple-300 bg-purple-50/50 p-8 text-center text-sm text-purple-600">
               No hay ventas encontradas.
             </div>
@@ -351,11 +167,9 @@ function ListaVentas() {
 function ListaQuejas() {
   const [clienteBusqueda, setClienteBusqueda] = useState("");
   const quejas = useQuery(api.datos.obtenerTodasLasQuejas);
-
   const quejasFiltradas = quejas?.filter((q) =>
     q.nombreCliente.toLowerCase().includes(clienteBusqueda.toLowerCase())
   );
-
   return (
     <section className="mx-auto w-full max-w-4xl">
       <article className={cardClassName}>
@@ -365,7 +179,6 @@ function ListaQuejas() {
             {quejasFiltradas?.length ?? 0} registros
           </span>
         </div>
-
         <div className="mb-5">
           <input
             type="text"
@@ -375,33 +188,22 @@ function ListaQuejas() {
             className={fieldClassName}
           />
         </div>
-
         <div className="max-h-[600px] space-y-3 overflow-y-auto pr-1">
-          {quejasFiltradas && quejasFiltradas.length > 0 ? (
-            quejasFiltradas.map((queja) => (
-              <div
-                key={queja._id}
-                className="rounded-xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 p-4 hover:border-red-300 hover:shadow-md"
-              >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-red-900">
-                      {queja.nombreCliente}
-                    </p>
-                    <p className="text-sm text-red-700">{queja.email}</p>
-                    <p className="text-sm text-red-700">{queja.telefono}</p>
-                  </div>
-                  <span className="rounded-full bg-red-200 px-3 py-1 text-xs font-bold text-red-900">
-                    {new Date(queja.fechaQueja).toLocaleDateString("es-MX")}
-                  </span>
+          {quejasFiltradas && quejasFiltradas.length > 0 ? quejasFiltradas.map((q) => (
+            <div key={q._id} className="rounded-xl border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 p-4 hover:border-red-300 hover:shadow-md">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-red-900">{q.nombreCliente}</p>
+                  <p className="text-sm text-red-700">{q.email}</p>
+                  <p className="text-sm text-red-700">{q.telefono}</p>
                 </div>
-
-                <p className="rounded-lg bg-red-100/60 p-3 text-sm text-red-900">
-                  {queja.descripcion}
-                </p>
+                <span className="rounded-full bg-red-200 px-3 py-1 text-xs font-bold text-red-900">
+                  {new Date(q.fechaQueja).toLocaleDateString("es-MX")}
+                </span>
               </div>
-            ))
-          ) : (
+              <p className="rounded-lg bg-red-100/60 p-3 text-sm text-red-900">{q.descripcion}</p>
+            </div>
+          )) : (
             <div className="rounded-xl border-2 border-dashed border-red-300 bg-red-50/50 p-8 text-center text-sm text-red-600">
               No hay quejas encontradas.
             </div>
@@ -414,8 +216,32 @@ function ListaQuejas() {
 
 function ChatDatosIA() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage, status, error } = useChat();
-  const isLoading = status === "submitted" || status === "streaming";
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat-ventas" }),
+  });
+  const isLoading = status === "streaming" || status === "submitted";
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = input.trim();
+    if (!text || isLoading) return;
+    setInput("");
+    sendMessage({ text });
+  };
+
+  // Solo mostrar mensajes de usuario y asistente que tengan texto visible
+  const mensajesVisibles = messages.filter((m) => {
+    if (m.role === "user") return true;
+    if (m.role === "assistant") {
+      const texto = m.parts
+        .filter((p) => p.type === "text")
+        .map((p) => ("text" in p ? p.text : ""))
+        .join("")
+        .trim();
+      return texto.length > 0;
+    }
+    return false;
+  });
 
   return (
     <section className="mx-auto w-full max-w-4xl">
@@ -423,9 +249,7 @@ function ChatDatosIA() {
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-purple-900">Chat con IA</h2>
-            <p className="text-sm text-purple-700">
-              Consulta y analiza datos de clientes, ventas y quejas usando IA.
-            </p>
+            <p className="text-sm text-purple-700">Consulta y analiza datos de clientes, ventas y quejas usando IA.</p>
           </div>
           <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
             {isLoading ? "Analizando..." : "Listo"}
@@ -433,12 +257,12 @@ function ChatDatosIA() {
         </div>
 
         <div className="mb-4 max-h-[520px] space-y-3 overflow-y-auto rounded-xl border-2 border-purple-200 bg-purple-50/50 p-4">
-          {messages.length === 0 ? (
+          {mensajesVisibles.length === 0 ? (
             <p className="text-sm text-purple-700">
-              Hola, soy tu asistente de análisis de datos. Puedo ayudarte con consultas sobre clientes, ventas y quejas. Por ejemplo:s ¿Cuál es el cliente con más compras? o ¿Cuál fue el monto total de ventas este mes?
+              Hola, soy tu asistente de análisis de datos. Puedo ayudarte con consultas sobre clientes, ventas y quejas. Por ejemplo: ¿Cuál es el cliente con más compras? o ¿Cuál fue el monto total de ventas?
             </p>
           ) : (
-            messages.map((message) => (
+            mensajesVisibles.map((message) => (
               <div
                 key={message.id}
                 className={`rounded-xl px-4 py-3 text-sm ${
@@ -450,31 +274,27 @@ function ChatDatosIA() {
                 <p className="mb-1 text-xs font-semibold uppercase opacity-80">
                   {message.role === "assistant" ? "Asistente" : "Tú"}
                 </p>
-                {message.parts
-                  .filter((part) => part.type === "text")
-                  .map((part, index) => (
-                    <p key={`${message.id}-${index}`} className="whitespace-pre-wrap">
-                      {part.text}
-                    </p>
-                  ))}
+                <p className="whitespace-pre-wrap">
+                  {message.parts
+                    .filter((p) => p.type === "text")
+                    .map((p) => ("text" in p ? p.text : ""))
+                    .join("")}
+                </p>
               </div>
             ))
           )}
+          {isLoading && (
+            <div className="mr-8 rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm text-slate-500">
+              <p className="mb-1 text-xs font-semibold uppercase opacity-80">Asistente</p>
+              <p className="animate-pulse">Consultando datos...</p>
+            </div>
+          )}
         </div>
 
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const text = input.trim();
-            if (!text || isLoading) return;
-            sendMessage({ text });
-            setInput("");
-          }}
-          className="flex gap-2"
-        >
+        <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             value={input}
-            onChange={(event) => setInput(event.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Pregunta sobre los datos..."
             className={fieldClassName}
           />
@@ -487,11 +307,9 @@ function ChatDatosIA() {
           </button>
         </form>
 
-        {error ? (
-          <p className="mt-3 text-sm font-medium text-red-600">
-            Error: {error.message}
-          </p>
-        ) : null}
+        {error && (
+          <p className="mt-3 text-sm font-medium text-red-600">Error: {error.message}</p>
+        )}
       </article>
     </section>
   );

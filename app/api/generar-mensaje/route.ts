@@ -16,8 +16,12 @@ export async function POST(req: Request) {
       tono = "formal" 
     } = await req.json();
 
-    const faltasDetalladas = faltas
-      .map((f: any) => `${f.fechaQueFalto} (${f.diasQueFalto} día${f.diasQueFalto > 1 ? 's' : ''})`)
+    interface Falta {
+      fechaQueFalto: string;
+      diasQueFalto: number;
+    }
+    const faltasDetalladas = (faltas as Falta[])
+      .map((f) => `${f.fechaQueFalto} (${f.diasQueFalto} día${f.diasQueFalto > 1 ? 's' : ''})`)
       .join(", ");
 
     const prompt = `Eres un asistente de una escuela que genera mensajes para los padres sobre las faltas de sus hijos.
