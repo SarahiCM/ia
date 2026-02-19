@@ -26,7 +26,6 @@ export default defineSchema({
     .index("by_alumno", ["nombreAlumno"])
     .index("by_enviado", ["enviado"]),
 
-
 //  TABLA DE LA ETAPA 3
 // TABLA DE PRUEBA PARA EL CHAT CON GEMINI, NO ES PARTE DEL SISTEMA DE FALTAS
     Clientes: defineTable({
@@ -70,5 +69,13 @@ export default defineSchema({
     })
     .index("by_email", ["email"])
     .index("by_cliente", ["nombreCliente"]),
-    
-});   
+  
+  // Tabla de respuestas del chat de ventas
+  RespuestasVentas: defineTable({
+    consulta: v.string(),
+    respuesta: v.string(),
+    fechaRespuesta: v.string(),
+  })
+    .index("by_fecha", ["fechaRespuesta"]),
+   
+});     

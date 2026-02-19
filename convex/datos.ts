@@ -193,3 +193,50 @@ export const obtenerResumenDatos = query({
     };
   },
 });
+
+// Guardar consulta y respuesta del chat de ventas
+export const guardarConsulta = mutation({
+  args: {
+    consulta: v.string(),
+    respuesta: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const respuestaId = await ctx.db.insert("RespuestasVentas", {
+      consulta: args.consulta,
+      respuesta: args.respuesta || "",
+      fechaRespuesta: new Date().toISOString(),
+    });
+    return respuestaId;
+  },
+});
+
+// Obtener todas las respuestas del chat de ventas
+export const obtenerTodasLasRespuestasVentas = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("RespuestasVentas").collect();
+  },
+});
+
+// Obtener respuestas por rango de fechas
+export const obtenerRespuestasPorFecha = query({
+  args: { fechaInicio: v.string(), fechaFin: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("RespuestasVentas")
+      .withIndex("by_fecha", (q) =>
+        q.gte("fechaRespuesta", args.fechaInicio).lte("fechaRespuesta", args.fechaFin)
+      )
+      .collect();
+  },
+});
+
+// Obtener respuestas recientes
+export const obtenerRespuestasRecientes = query({
+  args: { limite: v.number() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("RespuestasVentas")
+      .order("desc")
+      .take(args.limite);
+  },
+});

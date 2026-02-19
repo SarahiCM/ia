@@ -23,7 +23,7 @@ const datosFunciones = {
     }
   },
 
-  obtenerClientePorNombre: async (nombreCliente: string) => {
+   obtenerClientePorNombre: async (nombreCliente: string) => {
     try {
       const cliente = await convex.query(api.datos.obtenerClientePorNombre, {
         nombreCliente,

@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, } from "react";
 import { useQuery } from "convex/react";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { api } from "../../convex/_generated/api";
-
+import dynamic from "next/dynamic";
 type Vista = "clientes" | "ventas" | "quejas" | "resumen" | "chat";
 
 const fieldClassName =
@@ -14,6 +12,7 @@ const fieldClassName =
 const cardClassName =
   "rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50/30 p-6 shadow-[0_8px_24px_rgba(196,181,253,0.15)] backdrop-blur hover:shadow-[0_12px_32px_rgba(196,181,253,0.25)]";
 
+  
 export default function ChatDatos() {
   const [vistaActual, setVistaActual] = useState<Vista>("resumen");
 
@@ -149,7 +148,9 @@ function ListaVentas() {
                 </p>
                 <p className="rounded-lg bg-purple-100/60 p-2">
                   <span className="block text-xs font-bold uppercase text-purple-700 mb-1">Fecha</span>
-                  <span className="font-semibold text-xs">{new Date(v.fechaVenta).toLocaleDateString("es-MX")}</span>
+                  <span suppressHydrationWarning className="font-semibold text-xs">
+                    {new Date(v.fechaVenta).toLocaleDateString("es-MX")}
+                  </span>
                 </p>
               </div>
             </div>
@@ -197,7 +198,7 @@ function ListaQuejas() {
                   <p className="text-sm text-red-700">{q.email}</p>
                   <p className="text-sm text-red-700">{q.telefono}</p>
                 </div>
-                <span className="rounded-full bg-red-200 px-3 py-1 text-xs font-bold text-red-900">
+                <span suppressHydrationWarning className="rounded-full bg-red-200 px-3 py-1 text-xs font-bold text-red-900">
                   {new Date(q.fechaQueja).toLocaleDateString("es-MX")}
                 </span>
               </div>
@@ -214,103 +215,4 @@ function ListaQuejas() {
   );
 }
 
-function ChatDatosIA() {
-  const [input, setInput] = useState("");
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat-ventas" }),
-  });
-  const isLoading = status === "streaming" || status === "submitted";
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text || isLoading) return;
-    setInput("");
-    sendMessage({ text });
-  };
-
-  // Solo mostrar mensajes de usuario y asistente que tengan texto visible
-  const mensajesVisibles = messages.filter((m) => {
-    if (m.role === "user") return true;
-    if (m.role === "assistant") {
-      const texto = m.parts
-        .filter((p) => p.type === "text")
-        .map((p) => ("text" in p ? p.text : ""))
-        .join("")
-        .trim();
-      return texto.length > 0;
-    }
-    return false;
-  });
-
-  return (
-    <section className="mx-auto w-full max-w-4xl">
-      <article className={cardClassName}>
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-purple-900">Chat con IA</h2>
-            <p className="text-sm text-purple-700">Consulta y analiza datos de clientes, ventas y quejas usando IA.</p>
-          </div>
-          <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
-            {isLoading ? "Analizando..." : "Listo"}
-          </span>
-        </div>
-
-        <div className="mb-4 max-h-[520px] space-y-3 overflow-y-auto rounded-xl border-2 border-purple-200 bg-purple-50/50 p-4">
-          {mensajesVisibles.length === 0 ? (
-            <p className="text-sm text-purple-700">
-              Hola, soy tu asistente de análisis de datos. Puedo ayudarte con consultas sobre clientes, ventas y quejas. Por ejemplo: ¿Cuál es el cliente con más compras? o ¿Cuál fue el monto total de ventas?
-            </p>
-          ) : (
-            mensajesVisibles.map((message) => (
-              <div
-                key={message.id}
-                className={`rounded-xl px-4 py-3 text-sm ${
-                  message.role === "assistant"
-                    ? "mr-8 border border-purple-200 bg-white text-slate-800"
-                    : "ml-8 bg-purple-500 text-white"
-                }`}
-              >
-                <p className="mb-1 text-xs font-semibold uppercase opacity-80">
-                  {message.role === "assistant" ? "Asistente" : "Tú"}
-                </p>
-                <p className="whitespace-pre-wrap">
-                  {message.parts
-                    .filter((p) => p.type === "text")
-                    .map((p) => ("text" in p ? p.text : ""))
-                    .join("")}
-                </p>
-              </div>
-            ))
-          )}
-          {isLoading && (
-            <div className="mr-8 rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm text-slate-500">
-              <p className="mb-1 text-xs font-semibold uppercase opacity-80">Asistente</p>
-              <p className="animate-pulse">Consultando datos...</p>
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Pregunta sobre los datos..."
-            className={fieldClassName}
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="rounded-xl bg-gradient-to-r from-purple-400 to-purple-300 px-4 py-2.5 text-sm font-semibold text-white transition hover:from-purple-500 hover:to-purple-400 disabled:opacity-60"
-          >
-            {isLoading ? "Enviando..." : "Enviar"}
-          </button>
-        </form>
-
-        {error && (
-          <p className="mt-3 text-sm font-medium text-red-600">Error: {error.message}</p>
-        )}
-      </article>
-    </section>
-  );
-}
+const ChatDatosIA = dynamic(() => import("./ChatDatosIA"), { ssr: false });
